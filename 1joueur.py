@@ -3,6 +3,7 @@ import sys
 import time
 import random as rd
 import numpy as np
+from math import inf
 
 #Imports, initialisation
 pygame.init ()
@@ -247,25 +248,38 @@ def list_minmax(M,profondeur,profondeur_initiale,liste):
                 liste.append(list_minmax(M,profondeur-1,profondeur_initiale,list(liste_ce_niveau)))
                 M[ligne(col)-1][col] = 0
             else:
-                liste.append([np.nan for i in list_minmax(M,profondeur-1,profondeur_initiale,list(liste_ce_niveau))])
+                liste.append(list_nan(M,profondeur-1,profondeur_initiale,list(liste_ce_niveau)))
 
     return liste
+
+def list_nan(M,profondeur,profondeur_initiale,liste):
+    '''retrourne la liste de nan'''
+    if profondeur == 1:
+        for col in range(7):
+            liste.append(np.nan)
+    else:
+        liste_ce_niveau = list(liste)
+        for col in range(7):
+            liste.append(list_nan(M,profondeur-1,profondeur_initiale,list(liste_ce_niveau)))
+    return liste
+
 
 
 def minmax(liste):
     '''applique l'algorithme minmax à la liste des états possibles du jeu futur'''
     if type(liste[0]) != list:
-        return liste.index(max(liste)) 
+        return liste.index(vrai_max(liste)) 
     else:
         for i in range(len(liste)):
             liste[i] = min_spec(liste[i])
-        print(liste.index(max(liste)))
-        return liste.index(max(liste))
+        print(liste,liste.index(vrai_max(liste)))
+        return liste.index(vrai_max(liste))
 
 def max_spec(liste):
+    print(liste)
     '''partie max recursive de l'algorithme'''
     if type(liste[0]) != list:
-        return max(liste)
+        return vrai_max(liste)
     else:
         for i in range(len(liste)):
             liste[i] = min_spec(liste[i])
@@ -273,13 +287,39 @@ def max_spec(liste):
 
 
 def min_spec(liste):
+    print(liste)
     '''partie min recursive de l'algorithme'''
     if type(liste[0]) != list:
-        return min(liste)
+        return vrai_min(liste)
     else:
         for i in range(len(liste)):
             liste[i] = max_spec(liste[i])
         return min_spec(liste)
+
+def vrai_max(liste):
+    '''retourne le maximum d'une liste avec des nan'''
+    if liste == 7 * [np.nan]:
+        return np.nan
+    n = len(liste)
+    maximum = -inf
+    for i in range(n):
+        element = liste[i]
+        if type(element) == int and element>maximum:
+            maximum = element
+    return maximum
+
+def vrai_min(liste):
+    '''retourne le minimum d'une liste avec des nan'''
+    if liste == 7 * [np.nan]:
+        return np.nan 
+    n = len(liste)
+    minimum = inf
+    for i in range(n):
+        element = liste[i]
+        if type(element) == int and element<minimum:
+            minimum = element
+    return minimum
+
 
 def get_column(niveau):
     '''retourne la colonne où joue l'IA en fonction du niveau souhaité'''
